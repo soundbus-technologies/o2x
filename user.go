@@ -26,11 +26,15 @@ var (
 
 type UserStore interface {
 	Save(u User) (err error)
-	Find(id string) (u User, err error)
+	UpdatePwd(id interface{}, password string) (err error)
+	Find(id interface{}) (u User, err error)
 }
 
 type User interface {
-	GetUserID() string
+	GetUserID() interface{}
+	GetPassword() []byte
+	GetSalt() []byte
+	SetRawPassword(password string)
 	Match(password string) bool
 }
 
@@ -45,16 +49,16 @@ func NewUser(t reflect.Type) User {
 // -------------------------------
 func NewUserStore() UserStore {
 	return &MemoryUserStore{
-		data: make(map[string]User),
+		data: make(map[interface{}]User),
 	}
 }
 
 type MemoryUserStore struct {
 	sync.RWMutex
-	data map[string]User
+	data map[interface{}]User
 }
 
-func (cs *MemoryUserStore) Find(id string) (u User, err error) {
+func (cs *MemoryUserStore) Find(id interface{}) (u User, err error) {
 	cs.RLock()
 	defer cs.RUnlock()
 	if c, ok := cs.data[id]; ok {
@@ -72,35 +76,37 @@ func (cs *MemoryUserStore) Save(u User) (err error) {
 	return
 }
 
-// -------------------------------
-type SimpleUser struct {
-	UserID   string `bson:"_id" json:"user_id"`
-	Nickname string `bson:"nickname,omitempty" json:"nickname,omitempty"`
-	Password []byte `bson:"password" json:"password"`
-	Salt     []byte `bson:"salt" json:"salt"`
+func (cs *MemoryUserStore) UpdatePwd(id interface{}, password string) (err error) {
+	cs.Lock()
+	defer cs.Unlock()
+	if c, ok := cs.data[id]; ok {
+		c.SetRawPassword(password)
+		return
+	}
+	err = errors.New("not found")
+	return
 }
 
-func (u *SimpleUser) GetUserID() string {
+// -------------------------------
+type SimpleUser struct {
+	UserID   interface{} `bson:"_id" json:"user_id"`
+	Password []byte      `bson:"password" json:"password"`
+	Salt     []byte      `bson:"salt" json:"salt"`
+}
+
+func (u *SimpleUser) GetUserID() interface{} {
 	return u.UserID
 }
 
-func (u *SimpleUser) SetUserID(userID string) {
+func (u *SimpleUser) SetUserID(userID interface{}) {
 	u.UserID = userID
-}
-
-func (u *SimpleUser) GetNickname() string {
-	return u.Nickname
-}
-
-func (u *SimpleUser) SetNickname(nickname string) {
-	u.Nickname = nickname
 }
 
 func (u *SimpleUser) calcHash(password string) (hash []byte, err error) {
 	return scrypt.Key([]byte(password), u.Salt, 1<<14, 8, 1, pwHashByteLen)
 }
 
-func (u *SimpleUser) SetPassword(password string) {
+func (u *SimpleUser) SetRawPassword(password string) {
 	salt := make([]byte, pwSaltByteLen)
 	_, err := io.ReadFull(rand.Reader, salt)
 	if err != nil {
@@ -113,6 +119,14 @@ func (u *SimpleUser) SetPassword(password string) {
 		log.Fatal(err)
 	}
 	u.Password = hash
+}
+
+func (u *SimpleUser) GetPassword() []byte {
+	return u.Password
+}
+
+func (u *SimpleUser) GetSalt() []byte {
+	return u.Salt
 }
 
 func (u *SimpleUser) Match(password string) bool {

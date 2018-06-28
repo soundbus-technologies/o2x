@@ -20,7 +20,7 @@ func TestUser(t *testing.T) {
 	assert.Equal(t, "wongoo", u.GetNickname())
 
 	password := "my_password"
-	u.SetPassword(password)
+	u.SetRawPassword(password)
 
 	assert.True(t, u.Match(password), "password should be match")
 
@@ -36,7 +36,7 @@ func TestNewUser(t *testing.T) {
 	u2 := u.(*SimpleUser)
 	u2.SetUserID("u2")
 	u2.SetNickname("u2")
-	u2.SetPassword("pass")
+	u2.SetRawPassword("pass")
 
 	js, err := json.Marshal(u)
 	assert.Nil(t, err, err)
