@@ -15,27 +15,46 @@ import (
 )
 
 const (
-	PwSaltByteLen = 16
-	PwHashByteLen = 32
+	pwSaltByteLen = 16
+	pwHashByteLen = 32
+)
+
+var (
+	UserType          = reflect.TypeOf(new(User)).Elem()
+	SimpleUserPtrType = reflect.TypeOf(&SimpleUser{})
 )
 
 type UserStore interface {
-	Save(u *User) (err error)
-	Find(id string) (u *User, err error)
+	Save(u User) (err error)
+	Find(id string) (u User, err error)
 }
 
+type User interface {
+	GetUserID() string
+	Match(password string) bool
+}
+
+func IsUserType(t reflect.Type) bool {
+	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct && t.Implements(UserType)
+}
+
+func NewUser(t reflect.Type) User {
+	return reflect.New(t.Elem()).Interface().(User)
+}
+
+// -------------------------------
 func NewUserStore() UserStore {
 	return &MemoryUserStore{
-		data: make(map[string]*User),
+		data: make(map[string]User),
 	}
 }
 
 type MemoryUserStore struct {
 	sync.RWMutex
-	data map[string]*User
+	data map[string]User
 }
 
-func (cs *MemoryUserStore) Find(id string) (u *User, err error) {
+func (cs *MemoryUserStore) Find(id string) (u User, err error) {
 	cs.RLock()
 	defer cs.RUnlock()
 	if c, ok := cs.data[id]; ok {
@@ -46,42 +65,43 @@ func (cs *MemoryUserStore) Find(id string) (u *User, err error) {
 	return
 }
 
-func (cs *MemoryUserStore) Save(u *User) (err error) {
+func (cs *MemoryUserStore) Save(u User) (err error) {
 	cs.Lock()
 	defer cs.Unlock()
-	cs.data[u.UserID] = u
+	cs.data[u.GetUserID()] = u
 	return
 }
 
-type User struct {
+// -------------------------------
+type SimpleUser struct {
 	UserID   string `bson:"_id" json:"user_id"`
 	Nickname string `bson:"nickname,omitempty" json:"nickname,omitempty"`
 	Password []byte `bson:"password" json:"password"`
 	Salt     []byte `bson:"salt" json:"salt"`
 }
 
-func (u *User) GetUserID() string {
+func (u *SimpleUser) GetUserID() string {
 	return u.UserID
 }
 
-func (u *User) SetUserID(userID string) {
+func (u *SimpleUser) SetUserID(userID string) {
 	u.UserID = userID
 }
 
-func (u *User) GetNickname() string {
+func (u *SimpleUser) GetNickname() string {
 	return u.Nickname
 }
 
-func (u *User) SetNickname(nickname string) {
+func (u *SimpleUser) SetNickname(nickname string) {
 	u.Nickname = nickname
 }
 
-func (u *User) calcHash(password string) (hash []byte, err error) {
-	return scrypt.Key([]byte(password), u.Salt, 1<<14, 8, 1, PwHashByteLen)
+func (u *SimpleUser) calcHash(password string) (hash []byte, err error) {
+	return scrypt.Key([]byte(password), u.Salt, 1<<14, 8, 1, pwHashByteLen)
 }
 
-func (u *User) SetPassword(password string) {
-	salt := make([]byte, PwSaltByteLen)
+func (u *SimpleUser) SetPassword(password string) {
+	salt := make([]byte, pwSaltByteLen)
 	_, err := io.ReadFull(rand.Reader, salt)
 	if err != nil {
 		log.Fatal(err)
@@ -95,7 +115,7 @@ func (u *User) SetPassword(password string) {
 	u.Password = hash
 }
 
-func (u *User) Match(password string) bool {
+func (u *SimpleUser) Match(password string) bool {
 	hash, err := u.calcHash(password)
 	if err != nil {
 		log.Fatal(err)
