@@ -12,6 +12,7 @@ import (
 	"log"
 	"sync"
 	"errors"
+	"fmt"
 )
 
 const (
@@ -36,6 +37,20 @@ type User interface {
 	GetSalt() []byte
 	SetRawPassword(password string)
 	Match(password string) bool
+}
+
+func UserIdString(uid interface{}) (id string, err error) {
+	if stringer, ok := uid.(fmt.Stringer); ok {
+		id = stringer.String()
+		return
+	}
+	if sid, ok := uid.(string); ok {
+		id = sid
+		return
+	}
+
+	err = errors.New("unknown user id type")
+	return
 }
 
 func IsUserType(t reflect.Type) bool {

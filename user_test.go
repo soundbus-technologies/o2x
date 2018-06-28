@@ -14,10 +14,8 @@ import (
 func TestUser(t *testing.T) {
 	u := &SimpleUser{}
 	u.SetUserID("123")
-	u.SetNickname("wongoo")
 
 	assert.Equal(t, "123", u.GetUserID())
-	assert.Equal(t, "wongoo", u.GetNickname())
 
 	password := "my_password"
 	u.SetRawPassword(password)
@@ -35,7 +33,6 @@ func TestNewUser(t *testing.T) {
 
 	u2 := u.(*SimpleUser)
 	u2.SetUserID("u2")
-	u2.SetNickname("u2")
 	u2.SetRawPassword("pass")
 
 	js, err := json.Marshal(u)
