@@ -39,16 +39,23 @@ type User interface {
 	Match(password string) bool
 }
 
+type Hexer interface {
+	Hex() string
+}
+
 func UserIdString(uid interface{}) (id string, err error) {
-	if stringer, ok := uid.(fmt.Stringer); ok {
-		id = stringer.String()
-		return
-	}
 	if sid, ok := uid.(string); ok {
 		id = sid
 		return
 	}
-
+	if hexer, ok := uid.(Hexer); ok {
+		id = hexer.Hex()
+		return
+	}
+	if stringer, ok := uid.(fmt.Stringer); ok {
+		id = stringer.String()
+		return
+	}
 	err = errors.New("unknown user id type")
 	return
 }
