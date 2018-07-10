@@ -27,6 +27,7 @@ var (
 
 type UserStore interface {
 	Save(u User) (err error)
+	Remove(id interface{}) (err error)
 	UpdatePwd(id interface{}, password string) (err error)
 	Find(id interface{}) (u User, err error)
 }
@@ -95,6 +96,13 @@ func (cs *MemoryUserStore) Save(u User) (err error) {
 	cs.Lock()
 	defer cs.Unlock()
 	cs.data[u.GetUserID()] = u
+	return
+}
+
+func (cs *MemoryUserStore) Remove(id interface{}) (err error) {
+	cs.Lock()
+	defer cs.Unlock()
+	cs.data[id] = nil
 	return
 }
 
