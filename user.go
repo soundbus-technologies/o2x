@@ -36,6 +36,7 @@ type User interface {
 	GetUserID() interface{}
 	GetPassword() []byte
 	GetSalt() []byte
+	GetScopes() map[string]string
 	SetRawPassword(password string)
 	Match(password string) bool
 }
@@ -119,9 +120,10 @@ func (cs *MemoryUserStore) UpdatePwd(id interface{}, password string) (err error
 
 // -------------------------------
 type SimpleUser struct {
-	UserID   interface{} `bson:"_id" json:"user_id"`
-	Password []byte      `bson:"password" json:"password"`
-	Salt     []byte      `bson:"salt" json:"salt"`
+	UserID   interface{}       `bson:"_id" json:"user_id"`
+	Password []byte            `bson:"password" json:"password"`
+	Salt     []byte            `bson:"salt" json:"salt"`
+	Scopes   map[string]string `bson:"scopes" json:"scopes,omitempty"`
 }
 
 func (u *SimpleUser) GetUserID() interface{} {
@@ -166,4 +168,8 @@ func (u *SimpleUser) Match(password string) bool {
 		return false
 	}
 	return reflect.DeepEqual(hash, u.Password)
+}
+
+func (u *SimpleUser) GetScopes() map[string]string {
+	return u.Scopes
 }
