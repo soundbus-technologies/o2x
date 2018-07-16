@@ -10,6 +10,9 @@ import (
 )
 
 func TestAuth(t *testing.T) {
+	assert.True(t, ScopeContains("s", ""))
+	assert.True(t, ScopeContains("", ""))
+
 	as := NewAuthStore()
 
 	a := &AuthModel{

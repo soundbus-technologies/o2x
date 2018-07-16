@@ -37,7 +37,7 @@ type AuthStore interface {
 
 func ScopeContains(scope string, test string) bool {
 	if scope == "" {
-		return false
+		return test == ""
 	}
 	if test == "" {
 		return true
