@@ -13,5 +13,5 @@ type Oauth2ClientInfo interface {
 
 type Oauth2ClientStore interface {
 	oauth2.ClientStore
-	Set(id string, cli Oauth2ClientInfo) (err error)
+	Set(id string, cli oauth2.ClientInfo) (err error)
 }
