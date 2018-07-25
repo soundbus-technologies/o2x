@@ -43,6 +43,7 @@ func NewOauthError(status, code int, err string) *OauthError {
 const (
 	ErrCodeInternalError     = 100
 	ErrCodeInvalidCredential = 101
+	ErrCodeInvalidCaptcha    = 102
 	ErrCodeValueRequired     = 200
 	ErrCodeNotFound          = 201
 	ErrCodeDuplicated        = 202
@@ -51,6 +52,7 @@ const (
 var (
 	ErrInternalError     = NewOauthError(http.StatusInternalServerError, ErrCodeInternalError, "internal error")
 	ErrInvalidCredential = NewOauthError(http.StatusUnauthorized, ErrCodeInvalidCredential, "invalid credential")
+	ErrInvalidCaptcha    = NewOauthError(http.StatusUnauthorized, ErrCodeInvalidCaptcha, "invalid captcha")
 	ErrValueRequired     = NewOauthError(http.StatusBadRequest, ErrCodeValueRequired, "value required")
 	ErrNotFound          = NewOauthError(http.StatusNotFound, ErrCodeNotFound, "not found")
 	ErrDuplicated        = NewOauthError(http.StatusConflict, ErrCodeDuplicated, "duplicated")

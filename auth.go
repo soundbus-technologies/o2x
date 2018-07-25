@@ -28,7 +28,7 @@ type AuthStore interface {
 	// save auth
 	Save(auth Auth) error
 
-	// find auth by ClientID and UserID
+	// find auth by ClientId and UserID
 	Find(clientId string, userID string) (auth Auth, err error)
 
 	// whether the auth already exists

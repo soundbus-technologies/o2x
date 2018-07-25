@@ -30,10 +30,13 @@ type UserStore interface {
 	Remove(id interface{}) (err error)
 	UpdatePwd(id interface{}, password string) (err error)
 	Find(id interface{}) (u User, err error)
+	FindMobile(mobile string) (u User, err error)
 }
 
 type User interface {
+	GetID() string
 	GetUserID() interface{}
+	GetMobile() string
 	GetPassword() []byte
 	GetSalt() []byte
 	GetScopes() map[string]string
@@ -73,13 +76,15 @@ func NewUser(t reflect.Type) User {
 // -------------------------------
 func NewUserStore() UserStore {
 	return &MemoryUserStore{
-		data: make(map[interface{}]User),
+		data:       make(map[interface{}]User),
+		mobileData: make(map[string]User),
 	}
 }
 
 type MemoryUserStore struct {
 	sync.RWMutex
-	data map[interface{}]User
+	data       map[interface{}]User
+	mobileData map[string]User
 }
 
 func (cs *MemoryUserStore) Find(id interface{}) (u User, err error) {
@@ -93,10 +98,25 @@ func (cs *MemoryUserStore) Find(id interface{}) (u User, err error) {
 	return
 }
 
+func (cs *MemoryUserStore) FindMobile(mobile string) (u User, err error) {
+	cs.RLock()
+	defer cs.RUnlock()
+	if c, ok := cs.mobileData[mobile]; ok {
+		u = c
+		return
+	}
+	err = errors.New("not found")
+	return
+}
+
 func (cs *MemoryUserStore) Save(u User) (err error) {
 	cs.Lock()
 	defer cs.Unlock()
 	cs.data[u.GetUserID()] = u
+
+	if u.GetMobile() != "" {
+		cs.mobileData[u.GetMobile()] = u
+	}
 	return
 }
 
@@ -121,6 +141,7 @@ func (cs *MemoryUserStore) UpdatePwd(id interface{}, password string) (err error
 // -------------------------------
 type SimpleUser struct {
 	UserID   interface{}       `bson:"_id" json:"user_id"`
+	Mobile   string            `bson:"mobile" json:"mobile"`
 	Password []byte            `bson:"password" json:"password"`
 	Salt     []byte            `bson:"salt" json:"salt"`
 	Scopes   map[string]string `bson:"scopes" json:"scopes,omitempty"`
@@ -128,6 +149,18 @@ type SimpleUser struct {
 
 func (u *SimpleUser) GetUserID() interface{} {
 	return u.UserID
+}
+
+func (u *SimpleUser) GetID() string {
+	id, err := UserIdString(u.UserID)
+	if err != nil {
+		return ""
+	}
+	return id
+}
+
+func (u *SimpleUser) GetMobile() string {
+	return u.Mobile
 }
 
 func (u *SimpleUser) SetUserID(userID interface{}) {
