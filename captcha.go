@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Captcha oauth2.GrantType = "captcha"
+	CaptchaCredentials oauth2.GrantType = "captcha"
 )
 
 type CaptchaStore interface {

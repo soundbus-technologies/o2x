@@ -6,12 +6,13 @@ package o2x
 
 import "gopkg.in/oauth2.v3"
 
-type Oauth2ClientInfo interface {
+type O2ClientInfo interface {
 	oauth2.ClientInfo
-	GetScope() string
+	GetScopes() []string
+	GetGrantTypes() []oauth2.GrantType
 }
 
-type Oauth2ClientStore interface {
+type O2ClientStore interface {
 	oauth2.ClientStore
 	Set(id string, cli oauth2.ClientInfo) (err error)
 }

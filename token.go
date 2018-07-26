@@ -6,7 +6,7 @@ package o2x
 
 import "gopkg.in/oauth2.v3"
 
-type Oauth2TokenStore interface {
+type O2TokenStore interface {
 	oauth2.TokenStore
 
 	RemoveByAccount(userID string, clientID string) (err error)

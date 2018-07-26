@@ -43,14 +43,35 @@ func ScopeContains(scope string, test string) bool {
 		return true
 	}
 
+	scopes := strings.Split(scope, ",")
 	arr := strings.Split(test, ",")
 
-	for _, item := range arr {
-		if !strings.Contains(scope, item) {
+	return ScopesIn(scopes, arr)
+}
+
+func ScopeArrContains(scopes []string, str string) bool {
+	if str == "" {
+		return true
+	}
+	return ScopesIn(scopes, strings.Split(str, ","))
+}
+
+func ScopesIn(scopes []string, test []string) bool {
+	for _, s := range test {
+		if !ScopeIn(scopes, s) {
 			return false
 		}
 	}
 	return true
+}
+
+func ScopeIn(scopes []string, test string) bool {
+	for _, s := range scopes {
+		if s == test {
+			return true
+		}
+	}
+	return false
 }
 
 // --------------------------------------------------
