@@ -29,6 +29,7 @@ type UserStore interface {
 	Save(u User) (err error)
 	Remove(id interface{}) (err error)
 	UpdatePwd(id interface{}, password string) (err error)
+	UpdateScope(id interface{}, clientId, scope string) (err error)
 	Find(id interface{}) (u User, err error)
 	FindMobile(mobile string) (u User, err error)
 }
@@ -132,6 +133,25 @@ func (cs *MemoryUserStore) UpdatePwd(id interface{}, password string) (err error
 	defer cs.Unlock()
 	if c, ok := cs.data[id]; ok {
 		c.SetRawPassword(password)
+		return
+	}
+	err = errors.New("not found")
+	return
+}
+
+func (cs *MemoryUserStore) UpdateScope(id interface{}, clientId, scope string) (err error) {
+	cs.Lock()
+	defer cs.Unlock()
+	if c, ok := cs.data[id]; ok {
+		if c.GetScopes() == nil {
+			if u, ok := c.(*SimpleUser); ok {
+				u.Scopes = make(map[string]string)
+			} else {
+				err = errors.New("user scope map is nil")
+				return
+			}
+		}
+		c.GetScopes()[clientId] = scope
 		return
 	}
 	err = errors.New("not found")
