@@ -13,6 +13,12 @@ type O2TokenStore interface {
 	删除该用户在指定client下的所有token
 	 */
 	RemoveByAccount(userID string, clientID string) (err error)
+
+	/**
+	删除该用户的所有token
+	 */
+	RemoveByAccountNoClient(userID string) (err error)
+
 	/**
 	获取该用户在指定client下的token
 	 */
