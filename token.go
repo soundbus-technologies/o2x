@@ -9,6 +9,12 @@ import "gopkg.in/oauth2.v3"
 type O2TokenStore interface {
 	oauth2.TokenStore
 
+	/**
+	删除该用户在指定client下的所有token
+	 */
 	RemoveByAccount(userID string, clientID string) (err error)
+	/**
+	获取该用户在指定client下的token
+	 */
 	GetByAccount(userID string, clientID string) (ti oauth2.TokenInfo, err error)
 }
