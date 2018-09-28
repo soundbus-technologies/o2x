@@ -49,7 +49,7 @@ type Hexer interface {
 	Hex() string
 }
 
-/**
+/*
 将userId转为string输出
  */
 func UserIdString(uid interface{}) (id string, err error) {
@@ -190,14 +190,14 @@ func (u *SimpleUser) SetUserID(userID interface{}) {
 	u.UserID = userID
 }
 
-/**
+/*
 密码加密
  */
 func (u *SimpleUser) calcHash(password string) (hash []byte, err error) {
 	return scrypt.Key([]byte(password), u.Salt, 1<<14, 8, 1, pwHashByteLen)
 }
 
-/**
+/*
 利用密码生成 salt 和 加密密码
  */
 func (u *SimpleUser) SetRawPassword(password string) {
@@ -223,7 +223,7 @@ func (u *SimpleUser) GetSalt() []byte {
 	return u.Salt
 }
 
-/**
+/*
 密码比对
  */
 func (u *SimpleUser) Match(password string) bool {

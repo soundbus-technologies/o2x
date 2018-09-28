@@ -20,14 +20,14 @@ type CaptchaStore interface {
 	Valid(mobile, captcha string) (valid bool, err error)
 }
 
-/**
+/*
 手机验证码 使用内存缓存
  */
 type MemoryCaptchaStore struct {
 	c *cache.Cache
 }
 
-/**
+/*
 expireDuration 有效时长
  */
 func NewMemoryCaptchaStore(expireDuration time.Duration) (cs *MemoryCaptchaStore, err error) {

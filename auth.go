@@ -56,7 +56,7 @@ func ScopeArrContains(scopes []string, str string) bool {
 	return ScopesIn(scopes, strings.Split(str, ","))
 }
 
-/**
+/*
 检查test所有的内容是否都在scopes里面，只要有一个不在就返回false
  */
 func ScopesIn(scopes []string, test []string) bool {
@@ -68,8 +68,8 @@ func ScopesIn(scopes []string, test []string) bool {
 	return true
 }
 
-/**
-判断test是否在 scopes中<br>
+/*
+判断test是否在 scopes中
 如果存在 返回 true
  */
 func ScopeIn(scopes []string, test string) bool {
